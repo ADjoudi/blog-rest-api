@@ -5,7 +5,7 @@ const schema = new mongoose.Schema({
   last_name: { type: String, required: true },
   username: { type: String, required: true },
   password: { type: String, required: true },
-  posts: { type: mongoose.Types.Array },
+  posts: [{ type: mongoose.Types.ObjectId, ref: "Post" }],
 });
 
 const User = mongoose.model("User", schema);

@@ -1,5 +1,11 @@
 const express = require("express");
 const router = express.Router();
+const User = require("../models/user");
+const { body, validationResult } = require("express-validator");
+const local = require("../authentication/local");
+const passport_jwt = require("../authentication/passport-jwt");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 router.post("/sign-up", [
   body("username").trim().escape(),
