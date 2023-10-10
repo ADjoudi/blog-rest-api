@@ -1,5 +1,5 @@
-var express = require("express");
-var router = express.Router();
+const express = require("express");
+const router = express.Router();
 
 //get all posts (sorted by latest)
 router.get("/posts", function (req, res, next) {});
