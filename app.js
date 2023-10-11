@@ -3,6 +3,8 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const connectMongoDB = require("./databases/mongodb");
+const passport_jwt = require("./authentication/passport-jwt");
+const cors = require("cors");
 
 require("dotenv").config();
 
@@ -14,6 +16,8 @@ const authRouter = require("./routes/auth");
 
 const app = express();
 
+app.use(cors());
+
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -21,7 +25,11 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
-app.use("/users", usersRouter);
+app.use(
+  "/users",
+  passport_jwt.authenticate("jwt", { session: false }),
+  usersRouter
+);
 app.use("/auth", authRouter);
 
 module.exports = app;
