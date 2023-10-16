@@ -1,5 +1,14 @@
 const express = require("express");
 const router = express.Router();
+const User = require("../models/user");
+
+router.get("/user", function (req, res, next) {
+  const user = {
+    id: req.user._id,
+    name: req.user.first_name + " " + req.user.last_name,
+  };
+  res.json({ user });
+});
 
 //get all posts by user
 router.get("/:user/posts", function (req, res, next) {

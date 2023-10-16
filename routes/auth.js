@@ -3,7 +3,6 @@ const router = express.Router();
 const User = require("../models/user");
 const { body, validationResult } = require("express-validator");
 const local = require("../authentication/local");
-const passport_jwt = require("../authentication/passport-jwt");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -14,44 +13,35 @@ router.post("/sign-up", [
   body("lastName").trim().escape(),
   async function (req, res, next) {
     const errors = validationResult(req);
+    const user = {
+      first_name: req.body.first_name,
+      last_name: req.body.last_name,
+      username: req.body.username,
+      password: req.body.password,
+    };
 
     if (!errors.isEmpty()) {
-      return res.json({
-        first_name: req.body.first_name,
-        last_name: req.body.last_name,
-        username: req.body.username,
-        password: req.body.password,
-        errors: errors,
-      });
+      user.errors = errors;
+      res.json(user);
+      return;
     }
     const users = await User.find({ username: req.body.username });
-    if (users.length)
-      return res.json({
-        first_name: req.body.first_name,
-        last_name: req.body.last_name,
-        username: req.body.username,
-        password: req.body.password,
-        errors: { message: "Username Already exists" },
-      });
-
+    if (users.length) {
+      user.errors = { message: "Username Already exists" };
+      res.json(user);
+      return;
+    }
     try {
       bcrypt.hash(req.body.password, 10, async (err, hashedPassword) => {
-        if (err)
-          return res.json({
-            first_name: req.body.first_name,
-            last_name: req.body.last_name,
-            username: req.body.username,
-            password: req.body.password,
-            errors: errors,
-          });
-        const user = new User({
-          first_name: req.body.first_name,
-          last_name: req.body.last_name,
-          username: req.body.username,
-          password: hashedPassword,
-        });
-        await user.save();
-        const token = jwt.sign({ id: user._id }, process.env.SECRET, {
+        if (err) {
+          user.errors = err;
+          res.json(user);
+          return;
+        }
+        user.password = hashedPassword;
+        const newUser = new User(user);
+        await newUser.save();
+        const token = jwt.sign({ id: newUser._id }, process.env.SECRET, {
           expiresIn: "1h",
         });
         res.json({ token });
@@ -69,7 +59,8 @@ router.post(
     const token = jwt.sign({ id: req.user._id }, process.env.SECRET, {
       expiresIn: "1h",
     });
-    return res.json({ token });
+    res.json({ token });
+    return;
   }
 );
 
