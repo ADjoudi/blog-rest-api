@@ -1,16 +1,26 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/user");
+const Post = require("../models/post");
 
 router.get("/user", function (req, res, next) {
   const user = {
     id: req.user._id,
     name: req.user.first_name + " " + req.user.last_name,
   };
-  res.json({ user });
+  res.json(user);
 });
 
 //get all posts by user
+router.get("/:user/posts", async function (req, res, next) {
+  const posts = await Post.find({ author: req.params.user });
+  res.json({ posts: posts });
+});
+//get all comments in user's posts
+router.get("/:user/posts", function (req, res, next) {
+  res.send("respond with a resource");
+});
+//get all bookmarks by user
 router.get("/:user/posts", function (req, res, next) {
   res.send("respond with a resource");
 });
